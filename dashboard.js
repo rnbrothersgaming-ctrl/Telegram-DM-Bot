@@ -5,6 +5,10 @@ const path = require('path');
 const app = express();
 const PORT = process.env.DASHBOARD_PORT || 3000;
 
+// Set EJS as view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 // Admin password (set in .env or use default)
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
@@ -13,19 +17,19 @@ const HISTORY_FILE = path.join(__dirname, 'message-history.json');
 
 // Bot start time (read from file or use current time)
 const BOT_START_TIME_FILE = path.join(__dirname, 'bot-start-time.txt');
+const BOT_HEARTBEAT_FILE = path.join(__dirname, 'bot-heartbeat.txt');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('dashboard'));
 
 // Check if bot is running
 function isBotRunning() {
     try {
-        if (fs.existsSync(BOT_START_TIME_FILE)) {
-            const startTime = new Date(fs.readFileSync(BOT_START_TIME_FILE, 'utf8'));
+        if (fs.existsSync(BOT_HEARTBEAT_FILE)) {
+            const heartbeatTime = new Date(fs.readFileSync(BOT_HEARTBEAT_FILE, 'utf8'));
             const now = new Date();
-            // If bot started within last 1 minute, consider it running
-            const diffMinutes = (now - startTime) / 1000 / 60;
+            // If heartbeat within last 1 minute, consider it running
+            const diffMinutes = (now - heartbeatTime) / 1000 / 60;
             return diffMinutes < 1;
         }
         return false;
@@ -98,9 +102,9 @@ app.get('/api/history', (req, res) => {
     });
 });
 
-// Serve dashboard HTML
+// Serve dashboard using EJS template
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dashboard', 'index.html'));
+    res.render('dashboard');
 });
 
 app.listen(PORT, () => {
