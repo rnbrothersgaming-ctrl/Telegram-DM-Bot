@@ -24,6 +24,11 @@ const BOT_START_TIME_FILE = path.join(__dirname, 'bot-start-time.txt');
 // Save bot start time to file for dashboard
 fs.writeFileSync(BOT_START_TIME_FILE, botStartTime.toISOString());
 
+// Update bot start time every minute to keep status fresh
+setInterval(() => {
+    fs.writeFileSync(BOT_START_TIME_FILE, new Date().toISOString());
+}, 60000); // Every 60 seconds
+
 // Function to save message history
 function saveMessageHistory(message, reply, senderInfo) {
     try {
