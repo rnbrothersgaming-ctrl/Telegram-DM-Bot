@@ -8,6 +8,7 @@ node_modules/
 bot-start-time.txt
 bot-heartbeat.txt
 message-history.json
+cooldown.json
 
 # Logs
 *.log
