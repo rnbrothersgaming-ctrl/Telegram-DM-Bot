@@ -1,0 +1,17 @@
+# Environment variables
+.env
+
+# Dependencies
+node_modules/
+
+# Runtime files
+bot-start-time.txt
+bot-heartbeat.txt
+message-history.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
