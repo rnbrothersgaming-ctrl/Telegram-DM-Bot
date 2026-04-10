@@ -20,14 +20,17 @@ const HISTORY_FILE = path.join(__dirname, 'message-history.json');
 // Track bot start time
 const botStartTime = new Date();
 const BOT_START_TIME_FILE = path.join(__dirname, 'bot-start-time.txt');
+const BOT_HEARTBEAT_FILE = path.join(__dirname, 'bot-heartbeat.txt');
 
-// Save bot start time to file for dashboard
+// Save bot start time to file for dashboard (never changes)
 fs.writeFileSync(BOT_START_TIME_FILE, botStartTime.toISOString());
 
-// Update bot start time every minute to keep status fresh
+// Update heartbeat file every minute for status check
 setInterval(() => {
-    fs.writeFileSync(BOT_START_TIME_FILE, new Date().toISOString());
+    fs.writeFileSync(BOT_HEARTBEAT_FILE, new Date().toISOString());
 }, 60000); // Every 60 seconds
+// Initial heartbeat
+fs.writeFileSync(BOT_HEARTBEAT_FILE, new Date().toISOString());
 
 // Function to save message history
 function saveMessageHistory(message, reply, senderInfo) {
