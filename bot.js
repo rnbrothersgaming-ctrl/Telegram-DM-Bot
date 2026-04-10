@@ -17,6 +17,12 @@ const DEFAULT_REPLY = process.env.AUTO_REPLY_MESSAGE || replies.default;
 // Message history file
 const HISTORY_FILE = path.join(__dirname, 'message-history.json');
 
+// Cooldown file to track when user last manually replied
+const COOLDOWN_FILE = path.join(__dirname, 'cooldown.json');
+
+// Cooldown duration in milliseconds (5 minutes)
+const COOLDOWN_DURATION = 5 * 60 * 1000;
+
 // Track bot start time
 const botStartTime = new Date();
 const BOT_START_TIME_FILE = path.join(__dirname, 'bot-start-time.txt');
@@ -31,6 +37,40 @@ setInterval(() => {
 }, 60000); // Every 60 seconds
 // Initial heartbeat
 fs.writeFileSync(BOT_HEARTBEAT_FILE, new Date().toISOString());
+
+// Function to check if global cooldown is active
+function isGlobalCooldownActive() {
+    try {
+        if (!fs.existsSync(COOLDOWN_FILE)) {
+            return false;
+        }
+        
+        const cooldownData = JSON.parse(fs.readFileSync(COOLDOWN_FILE, 'utf8'));
+        const lastManualReplyTime = cooldownData.lastManualReply;
+        
+        if (!lastManualReplyTime) {
+            return false;
+        }
+        
+        const now = new Date();
+        const diffMs = now - new Date(lastManualReplyTime);
+        return diffMs < COOLDOWN_DURATION;
+    } catch (error) {
+        console.error('Cooldown check error:', error);
+        return false;
+    }
+}
+
+// Function to set global cooldown when user manually replies
+function setGlobalCooldown() {
+    try {
+        const cooldownData = { lastManualReply: new Date().toISOString() };
+        fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(cooldownData, null, 2));
+        console.log('Global cooldown সেট করা হয়েছে (৫ মিনিট)');
+    } catch (error) {
+        console.error('Cooldown update error:', error);
+    }
+}
 
 // Function to save message history
 function saveMessageHistory(message, reply, senderInfo) {
@@ -115,30 +155,42 @@ const client = new TelegramClient(session, apiId, apiHash, {
                 
                 // Only handle private messages (not groups or channels)
                 if (message.peerId && message.peerId.className === 'PeerUser') {
-                    // Ignore messages from yourself
-                    if (message.senderId && message.senderId.toString() !== me.id.toString()) {
-                        const incomingMessage = (message.message || '').toLowerCase().trim();
-                        console.log(`নতুন মেসেজ পেয়েছেন: ${message.message || '(media)'}`);
-                        
-                        // Find matching reply
-                        let replyMessage = DEFAULT_REPLY;
-                        for (const [key, value] of Object.entries(replies)) {
-                            if (key !== 'default' && incomingMessage.includes(key.toLowerCase())) {
-                                replyMessage = value;
-                                break;
-                            }
-                        }
-                        
-                        // Send auto-reply
-                        await client.sendMessage(message.peerId, {
-                            message: replyMessage,
-                        });
-                        console.log('Auto-reply পাঠানো হয়েছে:', replyMessage);
-                        
-                        // Save message history
-                        const senderInfo = await getUserInfo(message.senderId);
-                        saveMessageHistory(message.message || '(media)', replyMessage, senderInfo);
+                    // Check if message is from yourself (outgoing message)
+                    if (message.senderId && message.senderId.toString() === me.id.toString()) {
+                        // User manually sent a message, set global cooldown
+                        setGlobalCooldown();
+                        return;
                     }
+                    
+                    // Incoming message from someone else
+                    const senderId = message.senderId.toString();
+                    const incomingMessage = (message.message || '').toLowerCase().trim();
+                    console.log(`নতুন মেসেজ পেয়েছেন: ${message.message || '(media)'}`);
+                    
+                    // Check if global cooldown is active
+                    if (isGlobalCooldownActive()) {
+                        console.log('Global cooldown চলছে, auto-reply পাঠানো হচ্ছে না');
+                        return;
+                    }
+                    
+                    // Find matching reply
+                    let replyMessage = DEFAULT_REPLY;
+                    for (const [key, value] of Object.entries(replies)) {
+                        if (key !== 'default' && incomingMessage.includes(key.toLowerCase())) {
+                            replyMessage = value;
+                            break;
+                        }
+                    }
+                    
+                    // Send auto-reply
+                    await client.sendMessage(message.peerId, {
+                        message: replyMessage,
+                    });
+                    console.log('Auto-reply পাঠানো হয়েছে:', replyMessage);
+                    
+                    // Save message history
+                    const senderInfo = await getUserInfo(message.senderId);
+                    saveMessageHistory(message.message || '(media)', replyMessage, senderInfo);
                 }
             } catch (error) {
                 console.error('Reply পাঠাতে সমস্যা হয়েছে:', error);
