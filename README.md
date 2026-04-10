@@ -5,7 +5,7 @@
 **নতুন ফিচার:** এখন ডায়নামিক রিপ্লাই সিস্টেম! `replies.js` ফাইলে মেসেজ এবং রিপ্লাই সেট করুন। উদাহরণ: "hi" লিখলে "Hello!" রিপ্লাই যাবে, "assalamualaikum" লিখলে "Walaikumassalam" রিপ্লাই যাবে।
 
 ## Quick Start
- 
+
 ### 1. API Credentials নিন
 
 [my.telegram.org](https://my.telegram.org) থেকে API ID এবং API Hash নিন।
@@ -24,8 +24,8 @@ copy .env.example .env
 
 `.env` ফাইলে API_ID এবং API_HASH দিন:
 ```
-API_ID=xxxxxxx
-API_HASH=xxxxxxxxxxxxxxxxxxxx
+API_ID=33747218
+API_HASH=d96c70e9eba1387bb2f0569c51678122
 SESSION_STRING=
 ```
 
@@ -86,8 +86,8 @@ telegram_DM/
 ├── replies.js              # মেসেজ এবং রিপ্লাই কনফিগারেশন
 ├── generate.js             # লোকাল Session String জেনারেটর
 ├── dashboard.js            # ড্যাশবোর্ড সার্ভার
-├── dashboard/
-│   └── index.html          # ড্যাশবোর্ড UI
+├── views/
+│   └── dashboard.ejs       # ড্যাশবোর্ড UI (EJS টেমপ্লেট)
 ├── message-history.json     # মেসেজ হিস্ট্রি
 ├── package.json            # প্রজেক্ট ডিপেনডেন্সি
 ├── .env.example            # Environment variables টেমপ্লেট
