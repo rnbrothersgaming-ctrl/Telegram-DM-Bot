@@ -35,7 +35,12 @@ const replies = {
     'salam': 'Walaikumassalam! 🙏',
     
     // Default reply if no match found
-    'default': 'আমি এখন ব্যস্ত আছি, পরে কথা বলব। ধন্যবাদ! 🙏'
+    'default': '🤖 Hello! আমি Rifat-এর বট
+
+Rifat এখন ব্যস্ত আছেন ⏳  
+পরে আপনাকে রিপ্লাই দেওয়া হবে 👍  
+
+ধন্যবাদ! 🙏'
 };
 
 module.exports = replies;
